@@ -40,6 +40,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           // object-cover: crops the image to fill the space without distortion
           className="object-cover"
+          // this is related to images
           priority={priority}
         />
       </div>
@@ -59,7 +60,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
           <span className="text-blue-600 font-bold">${product.price}</span>
 
           <span className="text-yellow-500 text-sm">⭐ {product.rating}</span>
-          
+
         </div>
 
       </div>
