@@ -20,6 +20,7 @@ export default function ProductCard({ product } : ProductCardProps) {
 
 import { Product } from "@/types"
 import Image from "next/image"
+import Link from "next/link"
 
 type ProductCardProps = {
   product: Product,
@@ -29,7 +30,9 @@ type ProductCardProps = {
 export default function ProductCard({ product, priority = false }: ProductCardProps) {
   return (
     
-    <div className="border rounded-xl overflow-hidden shadow-md flex flex-col hover:shadow-lg transition-shadow">
+    <Link 
+      href={`products/${product.slug}`} 
+      className="border rounded-xl overflow-hidden shadow-md flex flex-col hover:shadow-lg transition-shadow">
 
       
       <div className="relative w-full h-48">
@@ -64,6 +67,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
         </div>
 
       </div>
-    </div>
+    </Link>
+    
   )
 }
