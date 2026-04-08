@@ -34,14 +34,14 @@ export default async function ProductPage({ params } : ProductPageProps) {
 
             <div className="flex flex-col gap-4 bg-gray-50 rounded-xl p-6">
                 <p className="text-sm text-gray-500 uppercase tracking-wide">{product.category}</p>
-                <h3 className="text-3xl font-bold text-gray-800">{product.name}</h3>
+                <h1 className="text-2xl font-bold text-gray-800">{product.name}</h1>
                 <p className="text-gray-600 leading-relaxed">{product.description}</p>
-                <p className="text-blue-600 font-bold">${product.price}</p>
+                <p className="text-blue-600 text-2xl font-bold">${product.price}</p>
                 <p className="text-yellow-500 text-sm">⭐ {product.rating}</p>
                 <p className={product.stock > 0 ? "text-green-600 text-sm" : "text-red-500 text-sm"}>
                     {product.stock > 0 ? `${product.stock} in stock` : "out of stock"}
                 </p>
-                <button className="bg-blue-600 text-white w-full px-6 py-3 font-semibold rounded-full hover:bg-blue-700 transition-colors mt-2">Add to Cart</button>
+                <button className="bg-blue-600 text-white w-full px-6 py-3 font-semibold rounded-full hover:bg-blue-700 transition-colors mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:scale-95">Add to Cart</button>
             </div>
         </main>
     )

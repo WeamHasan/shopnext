@@ -1,23 +1,3 @@
-/* import { Product } from "@/types";
-
-type ProductCardProps = {
-    product: Product
-}
-
-export default function ProductCard({ product } : ProductCardProps) {
-
-    return(
-        <div>
-            <h3>{product.name}</h3>
-            <p>{product.category}</p>
-            <p>{product.price}</p>
-            <p>{product.rating}</p>
-            
-        </div>
-    )
-} */
-
-
 import { Product } from "@/types"
 import Image from "next/image"
 import Link from "next/link"
@@ -31,7 +11,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
   return (
     
     <Link 
-      href={`products/${product.slug}`} 
+      href={`/products/${product.slug}`} 
       className="border rounded-xl overflow-hidden shadow-md flex flex-col hover:shadow-lg transition-shadow">
 
       
