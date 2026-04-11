@@ -14,3 +14,8 @@ export type Product = {
   rating: number
   createdAt: Date
 }
+
+export type AuthResponse = {
+  error?: string;
+  success?: boolean;
+} | null; // Adding null here allows the initial state to be empty
