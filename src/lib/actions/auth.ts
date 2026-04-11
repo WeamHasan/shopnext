@@ -6,7 +6,7 @@ import { redirect } from "next/navigation"
 import { signIn } from "@/lib/auth"
 import { AuthError } from "next-auth"
 import { AuthResponse } from "@/types"
-
+import { signOut } from "@/lib/auth"
 export type SignupState = {
     error: string | null
 }
@@ -76,4 +76,8 @@ export async function loginAction(
   }
 
   redirect("/products")
+}
+
+export async function logoutAction() {
+    await signOut({ redirectTo: "/"})
 }

@@ -1,6 +1,9 @@
 import Link from "next/link"
+import { auth } from "@/lib/auth"
+import LogoutButton from "./LogoutButton"
 
-export default function Navbar() {
+export default async function Navbar() {
+  const session = await auth();
   return (
     <nav className="sticky top-0 z-50 bg-white border-b shadow-sm">
 
@@ -47,12 +50,23 @@ export default function Navbar() {
             🛒 Cart
           </Link>
 
-          <Link
-            href="/login"
-            className="text-sm bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors"
-          >
-            Login
-          </Link>
+          {session?.user ? (
+            <div className="flex items-center gap-3">
+              {/* Greet the user by their first name only — split(" ")[0]
+                  takes the first word of their full name */}
+              <span className="text-sm text-gray-700 font-medium">
+                Hi, {session.user.name?.split(" ")[0]}
+              </span>
+              <LogoutButton />
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors"
+            >
+              Login
+            </Link>
+          )}
         </section>
 
       </div>
