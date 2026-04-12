@@ -4,9 +4,12 @@ import Link from "next/link";
 import { loginAction } from "@/lib/actions/auth";
 import { useActionState } from "react"
 import { AuthResponse } from "@/types";
+import { useSearchParams } from "next/navigation";
 
 
 export default function Login() {
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get("callbackUrl") ?? "/products";
 
     const [state, formAction] = useActionState<AuthResponse, FormData>(loginAction, null);
     
@@ -18,6 +21,7 @@ export default function Login() {
                     Login
                 </h1>
                 <form action={formAction} className="flex flex-col gap-4">
+                    <input type="hidden" name="callbackUrl" value={callbackUrl} />
                     <div className="flex flex-col gap-1">
                         <label
                             htmlFor="email"

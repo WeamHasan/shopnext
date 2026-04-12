@@ -52,6 +52,7 @@ export async function loginAction(
 ): Promise<AuthResponse> {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  const callbackUrl = formData.get("callbackUrl") as string | null
 
   if (!email || !password) {
     return { error: "Please fill in all fields" }
@@ -75,7 +76,12 @@ export async function loginAction(
     throw error
   }
 
-  redirect("/products")
+  const safeCallbackUrl =
+    callbackUrl && callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : "/products"
+
+  redirect(safeCallbackUrl)
 }
 
 export async function logoutAction() {
