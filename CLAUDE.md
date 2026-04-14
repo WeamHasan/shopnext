@@ -337,6 +337,21 @@ export type Product = {
   createdAt: Date
 }
 
+export type CartItem = {
+  // The unique database ID — used to identify items in the cart
+  // and prevent duplicates when adding the same product twice
+  productId: string
+
+  // Display fields — everything needed to render the cart UI
+  name: string
+  price: number
+  image: string   // Just the first image URL
+  slug: string    // For linking back to the product detail page
+
+  // The quantity this user wants to purchase
+  quantity: number
+}
+
 export type AuthResponse = {
   error?: string
   success?: boolean
@@ -377,7 +392,13 @@ redirect to callbackUrl. Major debugging episodes resolved: wrong next-auth
 version (v4 vs v5), AUTH_SECRET vs NEXTAUTH_SECRET naming, redirect() swallowed
 by catch blocks, Next.js 16 middleware → proxy rename.
 
-**Phase 5 — Shopping Cart** 🔄 Not yet started.
+**Phase 5 — Shopping Cart** 🔄
+-install zustand "zustand": "^5.0.12"
+-add CartItem type to "src/types/index.ts"
+-create useCartStore with zustand at "src/hooks/useCartStore.ts"
+-now: build AddToCartButton component to separate client code from server code in product detail page
+
+
 
 **Phases 6–8** (Checkout & Orders, Admin Dashboard, Deployment) not started.
 

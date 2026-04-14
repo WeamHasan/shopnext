@@ -1,4 +1,4 @@
-import NextAuth from "next-auth"
+/* import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import prisma from "@/lib/prisma"
@@ -93,4 +93,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/login",
   },
+}) */
+
+
+import NextAuth from "next-auth"
+import Credentials from "next-auth/providers/credentials"
+import { authConfig } from "./auth.config"
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        // LAZY LOAD: These are only imported when this function runs
+        const bcrypt = await import("bcryptjs")
+        const { default: prisma } = await import("@/lib/prisma")
+
+        const email = credentials?.email as string
+        const password = credentials?.password as string
+
+        if (!email || !password) return null
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+        })
+
+        if (!user) return null
+
+        const passwordMatch = await bcrypt.compare(password, user.hashedPassword)
+
+        if (!passwordMatch) return null
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        }
+      },
+    }),
+  ],
 })

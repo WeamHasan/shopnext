@@ -15,7 +15,16 @@ export type Product = {
   createdAt: Date
 }
 
+export type CartItem = {
+  productId: string
+  name: string
+  price: number
+  image: string
+  slug: string
+  quantity: number
+}
+
 export type AuthResponse = {
   error?: string;
   success?: boolean;
-} | null; // Adding null here allows the initial state to be empty
+} | null; // Adding null here allows the initial state to be emptyPP

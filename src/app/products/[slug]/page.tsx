@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Product } from "@/types";
 import Image from "next/image";
+import AddToCartButton from "@/components/AddToCartButton";
 
 type ProductPageProps = {
     params: Promise<{
@@ -41,7 +42,7 @@ export default async function ProductPage({ params } : ProductPageProps) {
                 <p className={product.stock > 0 ? "text-green-600 text-sm" : "text-red-500 text-sm"}>
                     {product.stock > 0 ? `${product.stock} in stock` : "out of stock"}
                 </p>
-                <button className="bg-blue-600 text-white w-full px-6 py-3 font-semibold rounded-full hover:bg-blue-700 transition-colors mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:scale-95">Add to Cart</button>
+                <AddToCartButton product={product} />
             </div>
         </main>
     )
