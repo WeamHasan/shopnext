@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { auth } from "@/lib/auth"
 import LogoutButton from "./LogoutButton"
+import CartCount from "./CartCount";
 
 export default async function Navbar() {
   const session = await auth();
@@ -43,12 +44,9 @@ export default async function Navbar() {
         {/* RIGHT — Cart and Auth */}
         {/* gap-4: space between cart and login links */}
         <section className="flex items-center gap-4">
-          <Link
-            href="/cart"
-            className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            🛒 Cart
-          </Link>
+          
+            <CartCount />
+          
 
           {session?.user ? (
             <div className="flex items-center gap-3">

@@ -2,16 +2,22 @@ import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 import { CartItem } from "@/types"
 
+
 // We define the shape of the entire store as a TypeScript type.
 // It contains both the state (items) and the functions that modify it.
 // Keeping them in the same type is the Zustand convention — state and
 // actions live together, unlike Redux which separates them.
 type CartStore = {
   items: CartItem[]
+  isOpen: boolean //new state
   addItem: (item: CartItem) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
+  // new actions
+  openCart: () => void
+  closeCart: () => void
+  toggleCart: () => void
 }
 
 export const useCartStore = create<CartStore>()(
@@ -26,6 +32,7 @@ export const useCartStore = create<CartStore>()(
     (set) => ({
       // Initial state — cart starts empty
       items: [],
+      isOpen: false,
 
       addItem: (newItem) =>
         set((state) => {
@@ -81,6 +88,10 @@ export const useCartStore = create<CartStore>()(
       // clearCart replaces the entire items array with an empty array.
       // Called after a successful checkout.
       clearCart: () => set({ items: [] }),
+
+      openCart: () => set( {isOpen: true}),
+      closeCart: () => set( {isOpen: false}),
+      toggleCart: () => set((state) => ({ isOpen: !state.isOpen}) )
     }),
     {
       // The key under which the cart is saved in localStorage.
@@ -94,6 +105,8 @@ export const useCartStore = create<CartStore>()(
       // directly because during server-side rendering localStorage
       // doesn't exist — the function delays access until the browser runs it.
       storage: createJSONStorage(() => localStorage),
+
+      partialize: (state) => ({ items: state.items})
     }
   )
 )

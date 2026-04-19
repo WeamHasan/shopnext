@@ -10,6 +10,7 @@ interface AddToCartButtonProps {
 
 export default function AddToCartButton({ product }: AddToCartButtonProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartStore((state) => state.openCart);
   const [isAdded, setIsAdded] = useState(false);
 
   const handleAddToCart = () => {
@@ -24,6 +25,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
 
     addItem(item);
     setIsAdded(true);
+    openCart();
 
     setTimeout(() => {
       setIsAdded(false);
@@ -37,10 +39,10 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
           ? "bg-green-600 hover:bg-green-700"
           : "bg-blue-600 hover:bg-blue-700"
       } 
-      disabled:bg-gray-400 disabled:cursor-not-allowed
-      text-white w-full px-6 py-3 font-semibold rounded-full transition-colors mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:scale-95`}
+      disabled:bg-green-600 disabled:cursor-not-allowed
+      text-white w-full px-6 py-3 font-semibold rounded-full mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95 transition-all`}
       onClick={handleAddToCart}
-      disabled={product.stock < 1}
+      disabled={product.stock < 1 || isAdded}
     >
       {product.stock < 1 ? "Out of Stock" 
       : isAdded ? "✓ Added!" 
