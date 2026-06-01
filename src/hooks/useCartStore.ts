@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-import { CartItem } from "@/types"
+import type { CartItem } from "@/types"
 
 
 // We define the shape of the entire store as a TypeScript type.
@@ -58,6 +58,8 @@ export const useCartStore = create<CartStore>()(
           // The spread [...state.items, newItem] creates a new array
           // containing all existing items plus the new one.
           return { items: [...state.items, newItem] }
+          //NOTE: Important React/Zustand concept:
+          //We create new arrays and objects instead of mutating old ones directly.
         }),
 
       removeItem: (productId) =>
@@ -101,7 +103,7 @@ export const useCartStore = create<CartStore>()(
 
       // createJSONStorage tells Zustand to use localStorage and
       // handle the JSON serialization/deserialization automatically.
-      // We pass a function () => localStorage rather than localStorage
+      //NOTE: We pass a function () => localStorage rather than localStorage
       // directly because during server-side rendering localStorage
       // doesn't exist — the function delays access until the browser runs it.
       storage: createJSONStorage(() => localStorage),

@@ -27,4 +27,6 @@ export type CartItem = {
 export type AuthResponse = {
   error?: string;
   success?: boolean;
-} | null; // Adding null here allows the initial state to be emptyPP
+} | null; // Adding null here allows the initial state to be empty
+
+

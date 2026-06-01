@@ -6,7 +6,16 @@ import { ShoppingBag } from "lucide-react";
 import CartItemRow from "@/components/CartItemRow";
 
 export default function CartPage() {
-  const { items } = useCartStore();
+  //This line gets the entire store and destructures items
+  //const { items } = useCartStore();
+
+  const items = useCartStore((state) => state.items)
+  
+  //NOTE:
+  //A slightly more targeted version would be:
+  //const items = useCartStore((state) => state.items)
+  //Both work. The selector version can be more efficient because it subscribes only to items.
+
 
   const subTotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -42,7 +51,7 @@ export default function CartPage() {
 
   // 2. Active State (Skeleton for now)
   return (
-    <div className="container mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto px-4 py-10">
       <h1 className="text-center text-3xl font-bold mb-10">Shopping Cart</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

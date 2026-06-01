@@ -24,6 +24,8 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
+    //Skipped: _next/static, _next/image, favicon.ico, api/auth
+    //Skipping api/auth is very important. Auth.js needs its own routes to work without being intercepted by the route guard
     matcher: [
         "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
     ],

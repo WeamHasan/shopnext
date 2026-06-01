@@ -5,20 +5,17 @@ import bcrypt from "bcryptjs"
 import { redirect } from "next/navigation"
 import { signIn } from "@/lib/auth"
 import { AuthError } from "next-auth"
-import { AuthResponse } from "@/types"
+import type { AuthResponse } from "@/types"
 import { signOut } from "@/lib/auth"
-export type SignupState = {
-    error: string | null
-}
 
 
-export async function signupAction(prevState:SignupState ,formData: FormData): Promise<SignupState> {
+export async function signupAction(prevState:AuthResponse ,formData: FormData): Promise<AuthResponse> {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
     if (!name || !email || !password) {
-        return { error: "All field are required"}
+        return { error: "All fields are required"}
     }
 
     if (password.length < 8) {
@@ -33,6 +30,7 @@ export async function signupAction(prevState:SignupState ,formData: FormData): P
         return { error: "An account with this email already exists"}
     }
 
+    // 12 is the salt, higher means slower but stronger.
     const hashedPassword = await bcrypt.hash(password, 12)
 
     await prisma.user.create({
@@ -81,9 +79,16 @@ export async function loginAction(
       ? callbackUrl
       : "/products"
 
+  // safe: /cart
+  // unsafe: https://evil.com
+  // unsafe: //evil.com
+
   redirect(safeCallbackUrl)
 }
 
 export async function logoutAction() {
+    // tells Auth.js:
+    //  destroy the session
+    //  redirect to /
     await signOut({ redirectTo: "/"})
 }

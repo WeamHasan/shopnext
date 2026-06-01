@@ -392,15 +392,24 @@ redirect to callbackUrl. Major debugging episodes resolved: wrong next-auth
 version (v4 vs v5), AUTH_SECRET vs NEXTAUTH_SECRET naming, redirect() swallowed
 by catch blocks, Next.js 16 middleware → proxy rename.
 
-**Phase 5 — Shopping Cart** 🔄
+**Phase 5 — Shopping Cart** ✅ 
 -install zustand "zustand": "^5.0.12"
 -add CartItem type to "src/types/index.ts"
--create useCartStore with zustand at "src/hooks/useCartStore.ts"
--now: build AddToCartButton component to separate client code from server code in product detail page
+-create useCartStore (items, addItem, removeItem, updateQuantity, clearCart) with zustand at "src/hooks/useCartStore.ts"
+-create AddToCartButton component to separate client code from server code in product detail page
+-Update the Navbar cart icon to show item count
+-Build the cart page
+-Build the CartItemRow component
+-Commit everything (feat: implement persistent shopping cart with Zustand, dynamic totals, and responsive cart page)
 
 
 
 **Phases 6–8** (Checkout & Orders, Admin Dashboard, Deployment) not started.
+
+**Phase 6 - Checkout & Orders** 🔄
+
+
+
 
 ---
 
@@ -435,6 +444,25 @@ px-4 sm:px-6 lg:px-8` container pattern. Semantic route names (`[slug]` not
 14. add dynamic navbar with session-aware login and logout
 15. add route protection with Next.js 16 proxy middleware
 16. fix post-login redirect to honor callbackUrl from protected routes
+
+6671adb (HEAD -> main, origin/main) feat: implement persistent shopping cart with Zustand, dynamic totals, and responsive cart page
+2a25d25 refactor and feature: optimize auth architecture and move prisma out of src to fix memory leaks - create useCartStore with zustand and addtocart button
+c2f8c45 update project context document through Phase 4 completion
+bd6962d add route protection with Next.js 16 proxy middleware - fix post login redirect to honor callbackUrl from protected route
+698665c add dynamic navbar with session-aware login and logout
+f4c51a6 add authentication with NextAuth v5, signup and login flows
+c7be034 feat: implement user signup with bcrypt hashing and server actions
+84ebdc8 Add product detail page with dynamic routing
+768a605 Style products page container and heading
+c762e81 Create a Navbar
+6139085 add ProductCard component with Tailwind styling and image optimization - FIX SSL mode in database connection string
+3316ae0 create Prisma singleton (prisma.ts) and fetch products in server component (products page)
+fb04c27 add database seed with five products
+1fb0045 define database schema with Prisma for all models
+726b223 Setup Prisma with Neon Postgresql Connection
+1abc940 Install mongoose and next-auth dependencies
+1a68579 Initialize project and clear boilerplate
+1f47ef8 Initial commit from Create Next App
 
 ---
 

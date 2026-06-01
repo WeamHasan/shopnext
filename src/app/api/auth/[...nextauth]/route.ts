@@ -5,3 +5,5 @@
 import { handlers } from "@/lib/auth"
 
 export const { GET, POST } = handlers
+
+//NOTE: try visit api/auth/session to understand what this file does

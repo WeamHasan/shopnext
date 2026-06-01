@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Product, CartItem } from "@/types";
+import type { Product, CartItem } from "@/types";
 import { useCartStore } from "@/hooks/useCartStore";
 
 interface AddToCartButtonProps {

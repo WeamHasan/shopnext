@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { Trash2, Minus, Plus } from "lucide-react"
-import { CartItem } from "@/types"
+import type { CartItem } from "@/types"
 import { useCartStore } from "@/hooks/useCartStore"
 import Link from "next/link"
 
@@ -11,7 +11,15 @@ interface CartItemRowProps {
 }
 
 export default function CartItemRow({ item }: CartItemRowProps) {
-  const { updateQuantity, removeItem } = useCartStore()
+  //NOTE: performance tip
+  //This gets the whole store object and destructures from it
+
+  //const { updateQuantity, removeItem } = useCartStore()
+
+  //A more targeted style is:
+  const updateQuantity = useCartStore((state) => state.updateQuantity)
+  
+  const removeItem = useCartStore((state) => state.removeItem)
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 py-6 border-b last:border-0">

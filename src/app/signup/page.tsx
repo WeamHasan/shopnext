@@ -1,14 +1,14 @@
 "use client";
 import { useActionState } from "react";
-import { signupAction, SignupState } from "@/lib/actions/auth";
+import { signupAction } from "@/lib/actions/auth";
+import type { AuthResponse } from "@/types";
 import Link from "next/link";
-
-const initialState: SignupState = { error: null};
 
 export default function Signup() {
 
-    const [state, fromAction] = useActionState(signupAction, initialState)
+    const [state, formAction] = useActionState<AuthResponse, FormData>(signupAction, null)
   return (
+    //NOTE: tailwind tip
     // min-h-screen centers the form vertically on the page
     // flex items-center justify-center achieves that centering
     <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -19,7 +19,7 @@ export default function Signup() {
         </h1>
 
         {/* No action yet - we'll add the server action next */}
-        <form action={fromAction} className="flex flex-col gap-4">
+        <form action={formAction} className="flex flex-col gap-4">
           {/* Each label-input pair is wrapped in its own div */}
           {/* This groups them visually and semantically */}
           <div className="flex flex-col gap-1">
@@ -67,7 +67,7 @@ export default function Signup() {
             />
           </div>
 
-          {state.error && (
+          {state?.error && (
             <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               {state.error}
             </div>

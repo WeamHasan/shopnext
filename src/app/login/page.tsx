@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { loginAction } from "@/lib/actions/auth";
 import { useActionState } from "react"
-import { AuthResponse } from "@/types";
+import type { AuthResponse } from "@/types";
 import { useSearchParams } from "next/navigation";
 
 
