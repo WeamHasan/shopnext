@@ -1,36 +1,37 @@
-import Link from "next/link"
-import { auth } from "@/lib/auth"
-import LogoutButton from "./LogoutButton"
+import Link from "next/link";
+import { auth } from "@/lib/auth";
+import LogoutButton from "./LogoutButton";
 import CartCount from "./CartCount";
 
 export default async function Navbar() {
   const session = await auth();
   return (
     <nav className="sticky top-0 z-50 bg-white border-b shadow-sm">
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-
         {/* LEFT — Brand + Navigation links */}
         {/* flex items-center gap-6: links sit side by side with spacing */}
         <section className="flex items-center gap-6">
-
           {/* Brand logo/name — font-bold text-xl makes it stand out */}
           <Link href="/" className="font-bold text-xl text-blue-600">
             ShopNext
           </Link>
 
-          <Link href="/" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+          <Link
+            href="/"
+            className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+          >
             Home
           </Link>
 
-          <Link href="/products" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+          <Link
+            href="/products"
+            className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+          >
             Products
           </Link>
-
         </section>
 
         <section className="flex-1 max-w-md mx-auto">
-
           {/* relative: needed to position a search icon inside later */}
           <div className="relative">
             <input
@@ -44,9 +45,7 @@ export default async function Navbar() {
         {/* RIGHT — Cart and Auth */}
         {/* gap-4: space between cart and login links */}
         <section className="flex items-center gap-4">
-          
-            <CartCount />
-          
+          <CartCount />
 
           {session?.user ? (
             <div className="flex items-center gap-3">
@@ -55,6 +54,12 @@ export default async function Navbar() {
               <span className="text-sm text-gray-700 font-medium">
                 Hi, {session.user.name?.split(" ")[0]}
               </span>
+              <Link
+                href="/orders"
+                className="text-sm font-medium text-gray-600 hover:text-blue-600 transition"
+              >
+                Orders
+              </Link>
               <LogoutButton />
             </div>
           ) : (
@@ -66,8 +71,7 @@ export default async function Navbar() {
             </Link>
           )}
         </section>
-
       </div>
     </nav>
-  )
+  );
 }

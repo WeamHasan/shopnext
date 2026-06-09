@@ -30,3 +30,25 @@ export type AuthResponse = {
 } | null; // Adding null here allows the initial state to be empty
 
 
+export type Order = {
+  id: string,
+  userId: string,
+  createdAt: Date,
+  orderItems: OrderItem[],
+}
+
+export type OrderItem = {
+  id: string,
+  price: number,
+  quantity: number,
+  orderId: string,
+  productId: string,
+
+  product: {
+    name: string,
+    slug: string,
+    images: string[],
+  }
+}
+
+
