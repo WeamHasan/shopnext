@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma"
-import { notFound } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { notFound, redirect } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -10,7 +11,13 @@ interface OrderDetailsPageProps {
 }
 
 export default async function OrderDetailsPage({ params }: OrderDetailsPageProps) {
-  // 1. Await the dynamic route parameters in Next.js 15+
+  
+  const session = await auth()
+  
+  if (!session || !session.user?.id) {
+    redirect(`/login?callbackUrl=/orders`)
+  }
+
   const { orderId } = await params
 
   // 2. Fetch the order with deeply nested relations
@@ -33,6 +40,13 @@ export default async function OrderDetailsPage({ params }: OrderDetailsPageProps
 
   // 3. Guard Clause: If the order doesn't exist, trigger the native Next.js 404 page
   if (!order) {
+    notFound()
+  }
+
+  if (order.userId !== session.user.id) {
+    // Instead of saying "Access Denied", we return a 404 notFound().
+    // This is a security best practice because it avoids confirming 
+    // to a malicious actor that the resource even exists.
     notFound()
   }
 

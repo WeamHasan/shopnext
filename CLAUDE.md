@@ -18,7 +18,9 @@ is not just to build a working app but to deeply understand every decision made
 along the way. The developer is learning to become a job-ready fullstack
 developer and wants to build a solid foundation, not just copy-paste code.
 
-The project is currently in **Phase 6 — Checkout & Orders** (not yet started).
+The project is currently in **Phase 6 — Checkout & Orders**. The main checkout,
+order persistence, order confirmation, and order history flow has been
+implemented and is under review/hardening.
 
 ---
 
@@ -79,6 +81,12 @@ shopnext/
 │   │   │   └── page.tsx     # Signup form (Client Component with useActionState)
 │   │   ├── cart/
 │   │   │   └── page.tsx     # Cart page (Client Component, reads Zustand store)
+│   │   ├── checkout/
+│   │   │   └── page.tsx     # Checkout page (Client Component, bridges cart to orders)
+│   │   ├── orders/
+│   │   │   ├── page.tsx     # Order history page for logged-in user
+│   │   │   └── [orderId]/
+│   │   │       └── page.tsx # Order confirmation/details page
 │   │   └── products/
 │   │       ├── page.tsx     # Products listing page "/products"
 │   │       └── [slug]/
@@ -96,7 +104,8 @@ shopnext/
 │   │   ├── auth.ts          # Auth.js v5 config - exports handlers, signIn, signOut, auth
 │   │   ├── prisma.ts        # Prisma singleton - single shared DB connection
 │   │   └── actions/
-│   │       └── auth.ts      # Server actions: signupAction, loginAction, logoutAction
+│   │       ├── auth.ts      # Server actions: signupAction, loginAction, logoutAction
+│   │       └── order.ts     # Server action: placeOrderAction
 │   ├── models/              # Empty, kept for reference
 │   └── types/
 │       ├── index.ts         # All app TypeScript types - single source of truth
@@ -381,12 +390,30 @@ export type AuthResponse = {
   error?: string
   success?: boolean
 } | null
+
+export type Order = {
+  id: string
+  userId: string
+  createdAt: Date
+  orderItems: OrderItem[]
+}
+
+export type OrderItem = {
+  id: string
+  price: number
+  quantity: number
+  orderId: string
+  productId: string
+  product: {
+    name: string
+    slug: string
+    images: string[]
+  }
+}
 ```
 
 Auth.js types in `src/types/next-auth.d.ts` extend `User`, `Session`, and
 `JWT` interfaces to add `id` and `role`.
-
-Phase 6 will add an `Order` type — see Task 1 in Phase 6 plan below.
 
 ---
 
@@ -441,13 +468,31 @@ Also applied memory leak fixes during Phase 5:
 - Commit: "refactor and feature: optimize auth architecture and move prisma
   out of src to fix memory leaks"
 
-**Phase 6 — Checkout & Orders** 🔄 Not yet started.
+**Phase 6 — Checkout & Orders** 🔄 Implemented, final cleanup/verification pending.
+- Added `Order` and `OrderItem` app-level display types.
+- Added `/checkout` Client Component reading Zustand cart state.
+- Added `placeOrderAction` in `src/lib/actions/order.ts`.
+- Checkout submits cart JSON to the server action, creates an Order with nested
+  OrderItem rows, decrements product stock, clears the Zustand cart on success,
+  and redirects to `/orders/[orderId]`.
+- Added `/orders/[orderId]` Server Component confirmation/details page.
+- Added `/orders` Server Component order history page filtered by current user.
+- Added logged-in-only Orders link in Navbar.
+
+Known review items before calling Phase 6 fully complete:
+- `/checkout` shows an empty-cart helper instead of redirecting to `/products`.
+  This is acceptable UX, but it differs from the original Task 10 wording.
+- `npm run lint` passes with warnings only: unused `err` in checkout and unused
+  imports in `src/types/next-auth.d.ts`.
+- `npm run build` could not be verified in the current shell because it is using
+  Node 18.19.1 while Next.js 16 requires Node >= 20.9.0. The project docs say
+  Node v24 should be used via nvm.
 
 **Phases 7–8** (Admin Dashboard, Deployment) not started.
 
 ---
 
-## Phase 6 Plan — Checkout & Orders
+## Phase 6 Implementation Notes — Checkout & Orders
 
 The checkout flow converges every layer built so far: authentication, database,
 state management, and server actions.
@@ -457,46 +502,32 @@ Three responsibilities: (1) collecting order details from Zustand cart store,
 (3) showing confirmation. No real payment processing — clicking "Place Order"
 creates the order directly as if payment was approved.
 
-**Task 1** — Add `Order` type to `src/types/index.ts`. Include `id`,
-`createdAt`, `userId`, and array of `OrderItem` types. Each OrderItem includes
-`quantity`, `price`, and associated Product's `name`, `slug`, `images`.
+Implemented flow:
+- `/checkout` is a Client Component that reads `items` and `clearCart` from
+  `useCartStore`, displays the order summary, collects placeholder shipping
+  fields, calls `placeOrderAction(JSON.stringify(items))`, clears the cart on
+  success, and routes to `/orders/[orderId]`.
+- `placeOrderAction` authenticates via `auth()`, parses cart JSON, validates
+  the cart is non-empty, rejects invalid quantities (`<= 0` or non-integers),
+  checks each product exists and has enough stock, snapshots authoritative
+  database prices instead of client cart prices, decrements stock inside a
+  Prisma transaction, creates one Order row linked to the current user, and
+  creates nested OrderItem rows.
+- `/orders/[orderId]` checks the session, redirects unauthenticated users to
+  `/login?callbackUrl=/orders`, fetches one order with nested
+  `orderItems.product` data, returns `notFound()` when the order is missing or
+  owned by a different user, and displays confirmation, item list, tax,
+  shipping, and total.
+- `/orders` fetches orders belonging to the logged-in user, newest first, and
+  displays item count, total paid, date, and links to each order detail page.
+- Navbar shows an `Orders` link only when `session?.user` exists.
 
-**Task 2** — Build checkout page skeleton at `src/app/checkout/page.tsx`.
-Client Component. Two columns: order summary (reads from useCartStore, shows
-items + total) and placeholder form. Verify at /checkout with cart items.
-
-**Task 3** — Protect `/checkout` in proxy.ts. Only logged-in users can place
-orders. Verify: logged out → /checkout should redirect to /login?callbackUrl=/checkout.
-
-**Task 4** — Build placeOrderAction in `src/lib/actions/order.ts`. Five steps:
-get session via auth(), receive cart items from FormData, create Order record
-linked to userId, create OrderItem records with price snapshots, return order
-ID or error. Cart clearing happens client-side after server confirms success.
-
-**Task 5** — Wire server action to checkout page. Pass cart items from Zustand
-to server via hidden form field using JSON.stringify(items). Server action
-parses them back. Verify Order + OrderItem rows in Neon after test order.
-
-**Task 6** — Clear cart after successful order. Call clearCart() client-side
-after server returns success. Verify cart badge drops to zero and localStorage
-is empty.
-
-**Task 7** — Build order confirmation page at `src/app/orders/[orderId]/page.tsx`.
-Server Component. Fetch order with nested include for orderItems and products.
-Redirect here after successful placeOrderAction.
-
-**Task 8** — Build order history page at `src/app/orders/page.tsx`. Server
-Component. Fetch all orders for logged-in user via auth() + prisma.order.findMany()
-ordered by createdAt desc. Each order shows date, item count, total, links to
-confirmation page.
-
-**Task 9** — Add Orders link to Navbar for logged-in users alongside logout button.
-
-**Task 10** — Handle edge cases: redirect to /products if cart is empty on
-checkout page load; stock check in placeOrderAction returning error if any
-item has insufficient stock.
-
-**Task 11** — Commit: "add checkout flow and order history with database persistence".
+Still recommended before final Phase 6 commit:
+- Remove or finish `src/app/test/page.tsx` before committing if it was only a
+  scratch checkout prototype.
+- Clean up lint warnings: unused `err` in checkout and unused imports in
+  `src/types/next-auth.d.ts`.
+- Run `npm run build` under Node >= 20.9.0.
 
 ---
 
