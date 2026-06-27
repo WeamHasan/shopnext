@@ -18,9 +18,8 @@ is not just to build a working app but to deeply understand every decision made
 along the way. The developer is learning to become a job-ready fullstack
 developer and wants to build a solid foundation, not just copy-paste code.
 
-The project is currently in **Phase 6 — Checkout & Orders**. The main checkout,
-order persistence, order confirmation, and order history flow has been
-implemented and is under review/hardening.
+The project has completed **Phase 6 — Checkout & Orders**. The main checkout,
+order persistence, order confirmation, and order history flow is implemented.
 
 ---
 
@@ -468,7 +467,7 @@ Also applied memory leak fixes during Phase 5:
 - Commit: "refactor and feature: optimize auth architecture and move prisma
   out of src to fix memory leaks"
 
-**Phase 6 — Checkout & Orders** 🔄 Implemented, final cleanup/verification pending.
+**Phase 6 — Checkout & Orders** ✅
 - Added `Order` and `OrderItem` app-level display types.
 - Added `/checkout` Client Component reading Zustand cart state.
 - Added `placeOrderAction` in `src/lib/actions/order.ts`.
@@ -479,16 +478,30 @@ Also applied memory leak fixes during Phase 5:
 - Added `/orders` Server Component order history page filtered by current user.
 - Added logged-in-only Orders link in Navbar.
 
-Known review items before calling Phase 6 fully complete:
-- `/checkout` shows an empty-cart helper instead of redirecting to `/products`.
-  This is acceptable UX, but it differs from the original Task 10 wording.
-- `npm run lint` passes with warnings only: unused `err` in checkout and unused
-  imports in `src/types/next-auth.d.ts`.
-- `npm run build` could not be verified in the current shell because it is using
-  Node 18.19.1 while Next.js 16 requires Node >= 20.9.0. The project docs say
-  Node v24 should be used via nvm.
+**Phases 7** (Admin Dashboard) status: doing now
 
-**Phases 7–8** (Admin Dashboard, Deployment) not started.
+-[ x ] Step 1: Promote yourself to ADMIN inside the database.
+
+-[ x ] Step 2: Restore the lightweight, high-performance cookie check in src/proxy.ts.
+
+-[ x ] Step 3: Build src/app/admin/layout.tsx with the authoritative auth() role gate using notFound().
+
+-[ x ] Step 4: Build the Admin Dashboard Homepage showing aggregate stats (count(), aggregate()).
+
+-[ x ] Step 5: Build the dense Admin Products Table listing.
+
+-[ x ] Step 6: Build the "Create Product" Server form using text field image URLs.
+
+-[ x ] Step 7: Build the "Edit Product" Server form pre-filled with relational data.
+
+-[ x ] Step 8: Build the secure Delete action featuring our order-history block guard.
+
+-[ x ] Step 9: Build the comprehensive Admin Orders View showing unified user and product data.
+
+-[ x ] Step 10: Add the conditional Admin link to your shared Navbar.
+
+
+**Phase 8: Deployment** status: not started yet
 
 ---
 
@@ -522,7 +535,10 @@ Implemented flow:
   displays item count, total paid, date, and links to each order detail page.
 - Navbar shows an `Orders` link only when `session?.user` exists.
 
-Still recommended before final Phase 6 commit:
+Future cleanup/improvements:
+- `/checkout` currently shows an empty-cart helper instead of redirecting to
+  `/products`. This is acceptable UX, but differs from the original Task 10
+  wording.
 - Remove or finish `src/app/test/page.tsx` before committing if it was only a
   scratch checkout prototype.
 - Clean up lint warnings: unused `err` in checkout and unused imports in
