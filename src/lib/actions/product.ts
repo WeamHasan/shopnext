@@ -125,6 +125,10 @@ export async function updateProductAction(
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "")
 
+  if (!slug) {
+    return { error: "Failed to generate a unique routing identifier from the product name."}
+  }
+
   const images = imageUrlInput ? [imageUrlInput] : ["https://placehold.co/600x400/png"]
 
   try {

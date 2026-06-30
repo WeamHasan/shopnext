@@ -18,8 +18,9 @@ is not just to build a working app but to deeply understand every decision made
 along the way. The developer is learning to become a job-ready fullstack
 developer and wants to build a solid foundation, not just copy-paste code.
 
-The project has completed **Phase 6 — Checkout & Orders**. The main checkout,
-order persistence, order confirmation, and order history flow is implemented.
+The project has completed **Phase 7 — Admin Dashboard & Product Management**.
+The app now has checkout/order persistence plus an authenticated admin area for
+store analytics, product CRUD, guarded deletion, and admin order visibility.
 
 ---
 
@@ -86,6 +87,20 @@ shopnext/
 │   │   │   ├── page.tsx     # Order history page for logged-in user
 │   │   │   └── [orderId]/
 │   │   │       └── page.tsx # Order confirmation/details page
+│   │   ├── admin/
+│   │   │   ├── layout.tsx   # Authoritative ADMIN role gate + admin shell/nav
+│   │   │   ├── page.tsx     # Admin dashboard aggregate stats
+│   │   │   ├── orders/
+│   │   │   │   └── page.tsx # Admin orders view with user + product data
+│   │   │   └── products/
+│   │   │       ├── page.tsx # Admin product table
+│   │   │       ├── DeleteProductButton.tsx # Client delete button with useActionState
+│   │   │       ├── new/
+│   │   │       │   └── page.tsx # Create product form
+│   │   │       └── [id]/
+│   │   │           └── edit/
+│   │   │               ├── page.tsx # Fetch product for editing
+│   │   │               └── EditProductForm.tsx # Client edit form
 │   │   └── products/
 │   │       ├── page.tsx     # Products listing page "/products"
 │   │       └── [slug]/
@@ -102,9 +117,11 @@ shopnext/
 │   ├── lib/
 │   │   ├── auth.ts          # Auth.js v5 config - exports handlers, signIn, signOut, auth
 │   │   ├── prisma.ts        # Prisma singleton - single shared DB connection
+│   │   ├── constants.ts     # Shared product category constants
 │   │   └── actions/
 │   │       ├── auth.ts      # Server actions: signupAction, loginAction, logoutAction
-│   │       └── order.ts     # Server action: placeOrderAction
+│   │       ├── order.ts     # Server action: placeOrderAction
+│   │       └── product.ts   # Admin product create/update/delete server actions
 │   ├── models/              # Empty, kept for reference
 │   └── types/
 │       ├── index.ts         # All app TypeScript types - single source of truth
@@ -478,7 +495,7 @@ Also applied memory leak fixes during Phase 5:
 - Added `/orders` Server Component order history page filtered by current user.
 - Added logged-in-only Orders link in Navbar.
 
-**Phases 7** (Admin Dashboard) status: doing now
+**Phase 7 — Admin Dashboard & Product Management** ✅
 
 -[ x ] Step 1: Promote yourself to ADMIN inside the database.
 
@@ -499,6 +516,42 @@ Also applied memory leak fixes during Phase 5:
 -[ x ] Step 9: Build the comprehensive Admin Orders View showing unified user and product data.
 
 -[ x ] Step 10: Add the conditional Admin link to your shared Navbar.
+
+- Added authenticated `/admin` route group with an authoritative role check in
+  `src/app/admin/layout.tsx`. Non-admin users receive `notFound()`.
+- Kept `src/proxy.ts` lightweight with a cookie-existence check only; no Prisma,
+  bcrypt, or `auth()` import inside proxy.
+- Added dashboard stats for users, products, orders, and revenue.
+- Added admin product table with product image, category, price, stock status,
+  edit link, and delete button.
+- Added create product form using `useActionState` and server-side validation.
+- Added edit product route and pre-filled edit form.
+- Added `src/lib/actions/product.ts` with create, update, and delete server
+  actions. Each mutation checks the current session and requires `ADMIN`.
+- Added secure delete behavior: products connected to historical `OrderItem`
+  records are blocked from deletion, preserving customer order history.
+- Added `DeleteProductButton` Client Component to show blocked-delete errors
+  inline using `useActionState`.
+- Added admin orders view showing each order with unified customer, order item,
+  and product data.
+- Added shared `PRODUCT_CATEGORIES` in `src/lib/constants.ts`.
+- Commit: `9fc6503 feat: implement PHASE 7 responsive admin dashboard, product
+  catalog management, and secure forms`
+
+Phase 7 review findings to handle in the future:
+- `updateProductAction` should add the same empty-slug guard that
+  `createProductAction` already has.
+- `updateProductAction` should revalidate both the old product slug path and the
+  new product slug path when a product name/slug changes.
+- Admin product image URLs should either be validated against allowed
+  `next.config.ts` image hosts or `remotePatterns` should be expanded.
+- Admin products table should use an image fallback for any manually inserted or
+  old database rows with `images: []`.
+- Dashboard/admin orders revenue calculations currently load all rows. This is
+  acceptable for learning, but later should become database aggregation or
+  pagination.
+- Existing lint warnings remain outside Phase 7: unused `err` in checkout and
+  unused imports in `src/types/next-auth.d.ts`.
 
 
 **Phase 8: Deployment** status: not started yet
@@ -547,6 +600,51 @@ Future cleanup/improvements:
 
 ---
 
+## Phase 7 Implementation Notes — Admin Dashboard & Product Management
+
+Phase 7 added a protected admin area without putting heavy authentication logic
+inside `proxy.ts`. The proxy only checks whether an Auth.js session cookie
+exists. The real security boundary lives in `src/app/admin/layout.tsx`, which
+calls `auth()` and requires `session.user.role === "ADMIN"`.
+
+Implemented flow:
+- Admin access starts at `/admin`. The admin layout wraps every admin route,
+  provides desktop/mobile navigation, and returns `notFound()` for non-admin
+  users.
+- `/admin` dashboard reads aggregate store data from Prisma and displays high
+  level stats: users, products, orders, and estimated revenue.
+- `/admin/products` fetches all products and renders a dense management table.
+  Each row links to edit and includes a delete control.
+- `/admin/products/new` is a Client Component because it uses `useActionState`
+  to display server-action validation errors. The server action validates
+  required fields, category boundaries, numeric price/stock, generated slug, and
+  then creates the Product.
+- `/admin/products/[id]/edit` is split into a Server Component page that fetches
+  the product and a Client Component form that uses `useActionState`.
+- `deleteProductAction` checks `ADMIN`, counts connected `OrderItem` rows, and
+  blocks deletion when the product is part of order history. This keeps old
+  orders reliable. The UI shows this blocked-delete message inline via
+  `DeleteProductButton`.
+- `/admin/orders` fetches orders newest-first and includes both customer data
+  (`user`) and purchased product data (`orderItems.product`) so the admin can
+  inspect customer purchases in one place.
+
+Important mental model: admin pages are protected twice. The admin layout
+protects the UI route, but every mutation server action also checks `ADMIN`
+again. Route protection controls what users can see; server-action authorization
+controls what users can change.
+
+Future cleanup from Phase 7 code review:
+- Add an empty-slug guard to `updateProductAction`.
+- Revalidate both old and new product detail paths after editing a product slug.
+- Validate admin-entered image URLs against allowed `next/image` hosts or expand
+  `next.config.ts` `remotePatterns`.
+- Add image fallback in the admin product table for products with no images.
+- Replace all-row revenue calculations with aggregation or pagination when data
+  grows.
+
+---
+
 ## Key Architectural Decisions
 
 Server Components for all data fetching — pages query Prisma directly without
@@ -581,7 +679,11 @@ f4c51a6 Add authentication with NextAuth v5, signup and login flows
 bd6962d Add route protection with Next.js 16 proxy, fix callbackUrl redirect
 c2f8c45 Update project context document through Phase 4 completion
 2a25d25 Optimize auth architecture, move prisma outside src, fix memory leaks, add cart store
-6671adb (HEAD) feat: implement persistent shopping cart with Zustand, dynamic totals, responsive cart page
+6671adb feat: implement persistent shopping cart with Zustand, dynamic totals, responsive cart page
+888c81f small edits
+201eb76 add checkout flow and order history with database persistence
+f67bfd3 fix some issues in order id and actions/order pages and update claude.md
+9fc6503 (HEAD -> main, origin/main, origin/HEAD) feat: implement PHASE 7 responsive admin dashboard, product catalog management, and secure forms
 
 ---
 

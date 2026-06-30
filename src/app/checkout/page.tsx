@@ -1,68 +1,59 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // 1. Added useEffect
 import { useCartStore } from "@/hooks/useCartStore"
 import { placeOrderAction } from "@/lib/actions/order"
 import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" // Removed Link since it won't be displayed anymore
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore()
   const router = useRouter()
   
-  // Local state to handle button loading animations and error messages
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Calculate financial derived states
+  // 2. UX Guard: Automatically redirect users if they land here with an empty cart
+  useEffect(() => {
+    if (items.length === 0) {
+      router.replace("/products") // .replace prevents back-button loops
+    }
+  }, [items, router])
+
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  const tax = subtotal * 0.14 // 14% VAT
+  const tax = subtotal * 0.14 
   const total = subtotal + tax
 
-  // Guard clause: If the cart is empty, show a fallback message
+  // 3. Render a clean loading screen state while the redirect is happening
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <h2 className="text-xl font-semibold">Your cart is empty</h2>
-        <p className="text-gray-500">You cannot checkout without items in your cart.</p>
-        <Link href="/products" className="text-blue-600 hover:underline">
-          Return to products
-        </Link>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-2">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        <p className="text-gray-500 text-sm">Redirecting to products...</p>
       </div>
     )
   }
 
-  // Form submission handler
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setErrorMessage(null)
 
     try {
-      // Serialize the client-side Zustand items array into a raw JSON string
       const cartItemsJson = JSON.stringify(items)
-      
-      // Fire the Server Action securely across the network boundary
       const result = await placeOrderAction(cartItemsJson)
 
       if (!result.success) {
         setErrorMessage(result.error || "An error occurred.")
         setIsSubmitting(false)
-
-        //move top to see the error message
         window.scrollTo({ top: 0, behavior: 'smooth' })
-
         return
       }
 
       clearCart()
-
-      // If successful, redirect the user to the temporary confirmation route
-      // (We will handle clearing the Zustand store on success in Task 6!)
       router.push(`/orders/${result.orderId}`)
       
-    } catch (err) {
+    } catch { // 4. Cleaned up unused variable by removing (err) completely
       setErrorMessage("A critical network error occurred. Please try again.")
       setIsSubmitting(false)
     }
@@ -72,10 +63,7 @@ export default function CheckoutPage() {
     <div className="container mx-auto px-4 py-10 max-w-6xl">
       <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
-      {/* Main Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* LEFT: Shipping Details Form (7 Columns) */}
         <div className="lg:col-span-7 bg-white p-6 rounded-xl border border-gray-200">
           <h2 className="text-xl font-bold mb-6">Shipping Information</h2>
           
@@ -127,7 +115,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* The Black Complete Button */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -138,7 +125,6 @@ export default function CheckoutPage() {
           </form>
         </div>
 
-        {/* RIGHT: Order Review Panel (5 Columns) */}
         <div className="lg:col-span-5 bg-gray-50 p-6 rounded-xl border border-gray-200 lg:sticky lg:top-24">
           <h2 className="text-xl font-bold mb-4">Your Order</h2>
           
@@ -184,7 +170,6 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   )
